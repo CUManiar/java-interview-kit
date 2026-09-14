@@ -59,9 +59,16 @@ Generic binary heap with a pluggable `Comparator`, heapsort, the `PriorityQueue`
 
 ## Self-test
 - Give the three index formulas for an array-backed heap.
+  > `parent(i) = (i-1)/2`, `left(i) = 2*i+1`, `right(i) = 2*i+2` (integer division). These fall directly out of storing a complete tree level-by-level, left to right, in a flat array — each node's children always live at fixed offsets from its own index, so no pointers are needed.
 - Why is building a heap O(n) and not O(n log n)?
+  > `heapify()` starts at the last non-leaf index (`n/2-1`) and sifts *down* toward the root, rather than sifting up while inserting elements one at a time. Most nodes live near the bottom of the tree and have very little height left to sift through — only a few nodes near the root have the full O(log n) height to traverse. Summing sift-down cost across all levels gives a series that converges to O(n), not O(n log n).
 - kth **largest**: min-heap or max-heap of size k? Why?
+  > A min-heap of size k (`findKthLargest`). Push every element, popping the current minimum whenever the heap exceeds size k; once done, the heap holds exactly the k largest values seen, and its root — the smallest of that set — is the kth largest. Cost O(n log k), cheaper than sorting when k ≪ n.
 - Why is `PriorityQueue.toString()` not sorted?
+  > The backing array is only *heap-ordered* (each parent <= its children), not fully sorted — sorting on every insert would defeat the point of O(log n) `push`. `toString()`/iteration just walks the underlying array in storage order; only repeated `poll()` calls, which perform the sift-down that restores heap order, yield values in sorted sequence.
 - Why is `remove(Object)` O(n) on a `PriorityQueue`, and how do you work around it?
+  > A heap array has no index for finding an arbitrary value by identity/equality — locating it requires a linear scan, and removing an interior element then needs a sift to restore heap order. The workaround is lazy deletion: keep a separate "stale" set of removed values, and skip (discard) any polled entry that's in that set instead of physically removing it from the heap immediately.
 - `MedianFinder`: state the two invariants between its two heaps.
+  > (1) Size balance: `lo.size() == hi.size()` or `lo.size() == hi.size() + 1` — `lo` (max-heap of the smaller half) never trails `hi` and is at most one element ahead. (2) Ordering: every element in `lo` is <= every element in `hi`. Together these guarantee `findMedian` is O(1): `lo.peek()` alone when sizes differ, otherwise the average of both peeks.
 - Why `Comparator.comparingInt` instead of `(a,b) -> a - b`?
+  > `a - b` silently overflows for values near `Integer.MIN_VALUE`/`MAX_VALUE`, flipping the sign and producing a wrong, hard-to-reproduce ordering. `Comparator.comparingInt` compares the extracted keys directly without subtraction, so it can't overflow — the safe default the file recommends over the manual-subtraction lambda.

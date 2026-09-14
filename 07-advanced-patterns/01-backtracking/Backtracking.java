@@ -3,49 +3,8 @@ import java.util.*;
 /* ==========================================================================
  * ALGOS: BACKTRACKING (+ recursion, bit manipulation, intervals, greedy)
  * Run: java Backtracking.java
- * ==========================================================================
- *
- * WHAT BACKTRACKING IS
- * --------------------
- * DFS over a decision tree. At each node you CHOOSE an option, EXPLORE deeper,
- * then UNDO the choice so you can try the next one.
- *
- *   void backtrack(path, choices) {
- *       if (goalReached) { record(path); return; }
- *       for (choice : choices) {
- *           if (!valid(choice)) continue;   // PRUNE - the real optimisation
- *           path.add(choice);               // CHOOSE
- *           backtrack(path, next);          // EXPLORE
- *           path.remove(last);              // UNDO   <- forget this and everything breaks
- *       }
- *   }
- *
- * THE DECISION TREE for subsets of [1,2,3]
- *
- *                        []
- *              /                    \
- *          [1] (take 1)          [] (skip 1)
- *          /     \                /      \
- *      [1,2]    [1]            [2]       []
- *      /  \     /  \           /  \      /  \
- *  [1,2,3][1,2][1,3][1]    [2,3] [2]  [3]  []
- *
- *   2^3 = 8 leaves = 8 subsets. Every backtracking problem is a tree like this;
- *   the only differences are the branching rule and the pruning rule.
- *
- * COMPLEXITY CHEAT SHEET
- * ----------------------
- *   subsets       O(n * 2^n)      2^n subsets, O(n) to copy each
- *   permutations  O(n * n!)
- *   combinations  O(k * C(n,k))
- *   N-queens      O(n!)           with pruning, far better in practice
- *   word search   O(m*n*4^L)
- *
- * THE THREE THINGS PEOPLE GET WRONG
- *   1. Forgetting to undo the choice.
- *   2. Adding the path by REFERENCE instead of copying -> everything ends up empty.
- *      Always `new ArrayList<>(path)` when recording.
- *   3. Handling duplicates: SORT first, then skip `i > start && a[i] == a[i-1]`.
+ * See ./README.md for the mental model, decision-tree diagram, complexity
+ * cheat sheet, and the three things people get wrong — not repeated here.
  * ========================================================================== */
 public class Backtracking {
 
@@ -342,7 +301,7 @@ public class Backtracking {
         if (intervals.length == 0) return intervals;
         Arrays.sort(intervals, Comparator.comparingInt(a -> a[0]));
         List<int[]> out = new ArrayList<>();
-        int[] cur = intervals[0].clone();
+        int[] cur = intervals[0].clone();      // clone: cur[1] gets mutated below, don't alias the input row
         for (int i = 1; i < intervals.length; i++) {
             if (intervals[i][0] <= cur[1]) cur[1] = Math.max(cur[1], intervals[i][1]); // overlap
             else { out.add(cur); cur = intervals[i].clone(); }
@@ -490,13 +449,5 @@ public class Backtracking {
  *   LC 45   Jump Game II                          med    BFS levels
  *   LC 763  Partition Labels                      med    last-index map
  *
- * SELF-TEST QUESTIONS
- *   - Write the 4-line backtracking skeleton from memory.
- *   - Why `new ArrayList<>(path)` and not `path` when recording a result?
- *   - Combination sum I recurses with `i`, II with `i+1`. Why?
- *   - The duplicate-skip guard is `i > start`, not `i > 0`. Why does that matter?
- *   - N-Queens: what are r-c and r+c, and why offset the diagonal index by n?
- *   - Word search: why restore the cell, and why doesn't flood fill need to?
- *   - Merge intervals sorts by start; erase-overlap sorts by end. Why the difference?
- *   - What does x & (x-1) do, and what's it used for?
+ * Self-test questions + answers: see ./README.md
  * ========================================================================== */

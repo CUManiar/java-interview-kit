@@ -3,46 +3,9 @@ import java.util.*;
 /* ==========================================================================
  * ALGOS: BINARY SEARCH (and friends)
  * Run: java SearchAlgos.java
- * ==========================================================================
- *
- * THE IDEA
- * --------
- * Every comparison eliminates half the search space. O(log n).
- * Binary search does NOT require an array. It requires a MONOTONIC PREDICATE:
- * some boolean f(x) that is false...false, true...true. You are finding the
- * boundary.
- *
- *        index:  0  1  2  3  4  5  6
- *        arr  : [1, 3, 5, 7, 9,11,13]   target = 9
- *
- *        lo=0 hi=6  mid=3 -> 7 < 9  -> lo=4
- *        lo=4 hi=6  mid=5 -> 11> 9  -> hi=4
- *        lo=4 hi=4  mid=4 -> 9 == 9 -> FOUND
- *
- * THE THREE BUGS EVERYONE WRITES
- * ------------------------------
- *   1. OVERFLOW:    mid = (lo + hi) / 2  overflows for large ints.
- *                   ALWAYS: mid = lo + (hi - lo) / 2
- *   2. INFINITE LOOP: with `while (lo < hi)` and `lo = mid`, if hi == lo+1 then
- *                   mid == lo and nothing moves. Use mid = lo + (hi-lo+1)/2
- *                   (round UP) when you write `lo = mid`.
- *   3. OFF-BY-ONE:  pick ONE template and never deviate. Mine are below.
- *
- * TEMPLATE 1 — exact match, closed interval [lo, hi]
- *   while (lo <= hi) { ... lo = mid+1 / hi = mid-1 }
- *   After the loop: lo == insertion point, hi == lo-1.
- *
- * TEMPLATE 2 — find the FIRST index where predicate is true, half-open [lo, hi)
- *   while (lo < hi) { if (ok(mid)) hi = mid; else lo = mid+1; }
- *   return lo;
- *   This one answers lowerBound, upperBound, "minimum capacity that works",
- *   rotated array, peak finding. LEARN THIS ONE BEST.
- *
- * "BINARY SEARCH ON THE ANSWER"
- *   When the question is "find the MINIMUM x such that it's feasible", binary
- *   search over the ANSWER RANGE, not over an array. You need a feasible(x)
- *   function that is monotonic. Koko bananas, ship packages, split array.
- *   Recognising this is worth more than any other single search skill.
+ * See ./README.md for the mental model, the three classic bugs (overflow,
+ * infinite loop, off-by-one), the two loop templates, and "binary search on
+ * the answer" — not repeated here.
  * ========================================================================== */
 public class SearchAlgos {
 
@@ -347,23 +310,13 @@ public class SearchAlgos {
 
     /*
      * ======================================================================
-     * 9. JAVA API
+     * 9. JAVA API — demonstrated live in main() below (Arrays.binarySearch's
+     * -(insertionPoint)-1 return, TreeSet.floor/ceiling as a clearer
+     * alternative for bound queries). Full syntax reference lives in
+     * ../../java-api-examples.md. NOTE: Arrays.binarySearch requires the
+     * array to be sorted — unsorted input gives undefined (silently wrong)
+     * results, it will not throw.
      * ======================================================================
-     * Arrays.binarySearch(int[] a, int key)
-     * found -> the index (NOT guaranteed to be the first if duplicates!)
-     * not found -> -(insertionPoint) - 1
-     * recover: int ip = -result - 1;
-     * Arrays.binarySearch(a, fromIndex, toIndex, key)
-     * Arrays.binarySearch(T[] a, T key, Comparator<T> c)
-     * Collections.binarySearch(list, key)
-     *
-     * PREFER TreeSet/TreeMap when you want bound semantics, they're clearer:
-     * TreeSet.floor(x) <= x TreeSet.ceiling(x) >= x
-     * TreeSet.lower(x) < x TreeSet.higher(x) > x
-     * TreeMap.floorEntry / ceilingEntry / subMap / headMap / tailMap
-     *
-     * IMPORTANT: Arrays.binarySearch requires the array to be SORTED. Results
-     * are undefined otherwise - it won't throw, it'll just lie.
      */
 
     /* ================================================================== */
@@ -433,13 +386,6 @@ public class SearchAlgos {
  * LC 4 Median of Two Sorted Arrays hard partition both arrays
  * LC 287 Find the Duplicate Number med binary search on value range
  *
- * SELF-TEST QUESTIONS
- * - Write the overflow-safe mid. Why does the naive form break?
- * - When do you need mid rounded UP, and why?
- * - What does Arrays.binarySearch return for a missing key, and how do you
- * turn it into an insertion index?
- * - Rotated array: what's the invariant that makes it work?
- * - Recognising "binary search on the answer": what must be true of feasible()?
- * - Why search the SHORTER array in median-of-two-sorted-arrays?
+ * Self-test questions + answers: see ./README.md
  * ==========================================================================
  */

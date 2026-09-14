@@ -3,74 +3,9 @@ import java.util.*;
 /* ==========================================================================
  * DS: HEAP / PRIORITY QUEUE
  * Run: java HeapNotes.java
- * ==========================================================================
- *
- * WHAT IT IS
- * ----------
- * A COMPLETE binary tree obeying the HEAP PROPERTY:
- *   MIN-HEAP: every parent <= its children  (smallest at the root)
- *   MAX-HEAP: every parent >= its children  (largest at the root)
- * There is NO left-right ordering. Siblings are unrelated. A heap is only
- * "partially sorted" - that's exactly why it's cheaper than a BST.
- *
- * ARRAY REPRESENTATION — because it's COMPLETE, no pointers needed
- * ---------------------------------------------------------------
- *            1
- *          /   \                 index: 0  1  2  3  4  5
- *         3     5        array: [ 1, 3, 5, 4, 8, 9 ]
- *        / \   /
- *       4   8 9
- *
- *   parent(i) = (i - 1) / 2
- *   left(i)   = 2*i + 1
- *   right(i)  = 2*i + 2
- *   Memorise these three lines. Everything else is derived from them.
- *
- * THE TWO OPERATIONS
- * ------------------
- *   SIFT UP   (after insert at the end): while I'm smaller than my parent, swap up.
- *   SIFT DOWN (after removing the root): move last element to root, then while
- *             I'm bigger than my smallest child, swap down.
- *
- *   push(0) into [1,3,5,4,8,9]:
- *     [1,3,5,4,8,9,0] -> 0 vs parent 5 -> swap -> 0 vs parent 1 -> swap
- *     [0,3,1,4,8,9,5]
- *
- *   pop() from [0,3,1,4,8,9,5]:
- *     take 0, move last (5) to root: [5,3,1,4,8,9]
- *     5 vs min(3,1)=1 -> swap -> [1,3,5,4,8,9]
- *
- * COMPLEXITY
- * ----------
- *   peek        O(1)
- *   push / pop  O(log n)
- *   heapify(array) O(n)   <- NOT O(n log n). Build bottom-up from index n/2-1 down.
- *   contains / arbitrary remove  O(n)  <- the weakness. Use a lazy-deletion trick.
- *   heapsort    O(n log n) time, O(1) extra space, but NOT stable
- *
- * HEAP vs BST — the interview comparison
- * ┌─────────────────┬──────────────┬──────────────┐
- * │                 │ Heap         │ Balanced BST │
- * ├─────────────────┼──────────────┼──────────────┤
- * │ find min/max    │ O(1)         │ O(log n)     │
- * │ insert          │ O(log n)     │ O(log n)     │
- * │ delete min      │ O(log n)     │ O(log n)     │
- * │ search value x  │ O(n)         │ O(log n)     │
- * │ sorted output   │ O(n log n)   │ O(n) inorder │
- * │ memory          │ array, tight │ node + ptrs  │
- * └─────────────────┴──────────────┴──────────────┘
- *
- * WHEN THE INTERVIEWER EXPECTS A HEAP
- *   - "top K" / "kth largest" / "kth smallest"
- *   - "merge K sorted things"
- *   - "median of a stream"          -> TWO heaps
- *   - scheduling by priority, Dijkstra, Prim, Huffman
- *   - "closest K points"
- *
- * THE K-th LARGEST RULE (people get this backwards constantly)
- *   kth LARGEST  -> keep a MIN-heap of size k. Root = the answer. Evict the smallest.
- *   kth SMALLEST -> keep a MAX-heap of size k. Root = the answer. Evict the largest.
- *   Cost: O(n log k), beats sorting's O(n log n) when k << n.
+ * See ./README.md for the heap property, array representation (parent/left/
+ * right index formulas), sift up/down, complexity, and heap-vs-BST — not
+ * repeated here.
  * ========================================================================== */
 public class HeapNotes {
 
@@ -169,37 +104,12 @@ public class HeapNotes {
     }
 
     /* ======================================================================
-     * 3. JAVA API — PriorityQueue
-     * ======================================================================
-     *   PriorityQueue<Integer> min = new PriorityQueue<>();                  // MIN by default
-     *   PriorityQueue<Integer> max = new PriorityQueue<>(Collections.reverseOrder());
-     *   PriorityQueue<Integer> max2= new PriorityQueue<>((x,y) -> y - x);    // avoid: overflow
-     *   PriorityQueue<Integer> max3= new PriorityQueue<>(Comparator.reverseOrder()); // BEST
-     *
-     *   pq.offer(x) / pq.add(x)     O(log n)
-     *   pq.poll()                   O(log n), null if empty
-     *   pq.peek()                   O(1),     null if empty
-     *   pq.size() / pq.isEmpty()
-     *   new PriorityQueue<>(collection)   <- O(n) heapify, use this over a loop of offers
-     *
-     *   ┌──────────────────────────────────────────────────────────────────┐
-     *   │ GOTCHAS                                                          │
-     *   │ 1. Iteration / toString is NOT sorted. Only poll() gives order.  │
-     *   │ 2. remove(Object) and contains() are O(n).                       │
-     *   │ 3. No null elements.                                             │
-     *   │ 4. Not thread safe (use PriorityBlockingQueue).                  │
-     *   │ 5. Not stable: equal-priority items have no defined order.       │
-     *   │    Fix by adding an insertion counter to the comparator.         │
-     *   └──────────────────────────────────────────────────────────────────┘
-     *
-     *   COMPARATORS YOU'LL WRITE CONSTANTLY:
-     *     new PriorityQueue<int[]>((a,b) -> a[1] - b[1])                  // by 2nd field
-     *     new PriorityQueue<int[]>(Comparator.comparingInt(a -> a[1]))    // safer
-     *     new PriorityQueue<>(Comparator.comparingInt(Task::priority)
-     *                                   .thenComparing(Task::name))
-     *     // max-heap on a field:
-     *     new PriorityQueue<>(Comparator.comparingInt(Task::priority).reversed())
-     */
+     * 3. JAVA API — PriorityQueue. Construction, comparator idioms, and the
+     * "toString isn't sorted" / O(n) remove gotchas are demonstrated live in
+     * main() and the patterns below (findKthLargest, kClosest, mergeKSorted).
+     * Note: min by default; pass Comparator.reverseOrder() for a max-heap, and
+     * prefer Comparator.comparingInt over `(a,b) -> a - b` (overflow risk).
+     * ====================================================================== */
 
     /* ======================================================================
      * 4. PATTERN: Kth LARGEST  (LC 215) — min-heap of size k, O(n log k)
@@ -388,13 +298,5 @@ public class HeapNotes {
  *   LC 767  Reorganize String                     med    max heap on counts
  *   LC 253  Meeting Rooms II                      med    min heap of end times
  *
- * SELF-TEST QUESTIONS
- *   - Give the three index formulas for an array-backed heap.
- *   - Why is building a heap O(n) and not O(n log n)?
- *   - kth LARGEST: min-heap or max-heap of size k? Why?
- *   - Why is PriorityQueue.toString() not sorted?
- *   - Why is remove(Object) O(n) on a PriorityQueue, and how do you work around it?
- *     (lazy deletion: keep a "stale" set and skip entries when polling)
- *   - MedianFinder: state the two invariants.
- *   - Why `Comparator.comparingInt` instead of `(a,b) -> a - b`?  (overflow)
+ * Self-test questions + answers: see ./README.md
  * ========================================================================== */

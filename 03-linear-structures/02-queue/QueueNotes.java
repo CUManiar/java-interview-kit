@@ -3,42 +3,8 @@ import java.util.*;
 /* ==========================================================================
  * DS: QUEUE  (FIFO - First In, First Out)  + Deque + Circular Queue
  * Run: java QueueNotes.java
- * ==========================================================================
- *
- * MENTAL MODEL
- * ------------
- *   enqueue at REAR, dequeue at FRONT.
- *
- *        dequeue                              enqueue
- *          <--  [1] -> [2] -> [3] -> null  <--
- *              front              rear
- *
- *   enqueue(4):   rear.next = new; rear = new;
- *   dequeue():    val = front.data; front = front.next;
- *                 if (front == null) rear = null;   // <-- THE bug everyone hits
- *
- * WHY WE KEEP A `rear` POINTER
- *   Without it, enqueue is O(n) (walk to the tail). With it, O(1).
- *
- * CIRCULAR QUEUE (array-backed) — avoids shifting elements
- * --------------------------------------------------------
- *   cap = 5
- *   index:  0    1    2    3    4
- *         [ _ ][ B ][ C ][ D ][ _ ]
- *                ^front      ^rear
- *   rear = (rear + 1) % cap      <- the wrap-around one-liner
- *   full  : size == cap
- *   empty : size == 0
- *   (Keeping an explicit `size` field is simpler than the "waste one slot" trick.)
- *
- * COMPLEXITY
- *   enqueue O(1) | dequeue O(1) | peek O(1) | space O(n)
- *
- * WHEN THE INTERVIEWER EXPECTS A QUEUE
- *   - BFS on graphs / trees / grids  (level-order, shortest path in unweighted)
- *   - sliding window MAXIMUM         -> monotonic Deque
- *   - rate limiting, task scheduling, producer-consumer
- *   - "process in arrival order"
+ * See ./README.md for the mental model, complexity, and when to reach
+ * for a queue — not repeated here.
  * ========================================================================== */
 public class QueueNotes {
 
@@ -145,37 +111,10 @@ public class QueueNotes {
     }
 
     /* ======================================================================
-     * 4. JAVA API — WHAT TO ACTUALLY TYPE
-     * ======================================================================
-     *
-     *   Queue<Integer> q = new ArrayDeque<>();    // fastest general queue
-     *   Queue<Integer> q = new LinkedList<>();    // ok, allows nulls, more GC churn
-     *   Deque<Integer> dq = new ArrayDeque<>();   // double-ended: stack AND queue
-     *
-     *   QUEUE INTERFACE — two flavours per operation:
-     *   ┌────────────┬──────────────────────┬─────────────────────┐
-     *   │ Operation  │ THROWS exception     │ RETURNS special val │
-     *   ├────────────┼──────────────────────┼─────────────────────┤
-     *   │ insert     │ add(e)               │ offer(e) -> false   │
-     *   │ remove     │ remove()             │ poll()   -> null    │
-     *   │ examine    │ element()            │ peek()   -> null    │
-     *   └────────────┴──────────────────────┴─────────────────────┘
-     *   In interviews: use offer/poll/peek. Never blow up on empty.
-     *
-     *   DEQUE — the superset. Learn these 6 and you never need anything else:
-     *     addFirst/offerFirst   addLast/offerLast
-     *     pollFirst             pollLast
-     *     peekFirst             peekLast
-     *   Aliases:  push == addFirst,  pop == removeFirst,  add == addLast
-     *
-     *   OTHER IMPLEMENTATIONS WORTH NAMING:
-     *     PriorityQueue        -> heap, not FIFO (see ../../04-trees-heaps-tries/02-heap/HeapNotes.java)
-     *     LinkedBlockingQueue  -> thread-safe, blocking put/take (producer-consumer)
-     *     ConcurrentLinkedQueue-> lock-free, non-blocking
-     *     ArrayBlockingQueue   -> bounded + blocking
-     *
-     *   ArrayDeque does NOT allow null. It is not thread safe. It has no capacity limit.
-     */
+     * 4. JAVA API — ArrayDeque as Queue/Deque, demonstrated live in main()
+     * below. Full offer/poll/peek + addFirst/addLast syntax reference lives
+     * in ../../java-api-examples.md.
+     * ====================================================================== */
 
     /* ======================================================================
      * 5. PATTERN: BFS LEVEL-ORDER — the single most reused queue template
@@ -325,10 +264,5 @@ public class QueueNotes {
  *   LC 239  Sliding Window Maximum                hard   monotonic deque
  *   LC 127  Word Ladder                           hard   BFS on implicit graph
  *
- * SELF-TEST QUESTIONS
- *   - In dequeue(), why must you null out `rear` when the queue empties?
- *   - Why mark `visited` when you ENQUEUE and not when you DEQUEUE?
- *   - Multi-source BFS: what changes vs single source? (seed ALL sources at level 0)
- *   - Why does the two-stack queue only dump when `out` is empty?
- *   - Deque sliding-window-max: why is popping the back safe?
+ * Self-test questions + answers: see ./README.md
  * ========================================================================== */

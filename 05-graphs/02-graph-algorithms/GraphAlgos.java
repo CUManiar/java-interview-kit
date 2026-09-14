@@ -4,46 +4,9 @@ import java.util.*;
  * ALGOS: GRAPH ALGORITHMS
  * (data structure basics live in ../01-graph-basics/GraphNotes.java)
  * Run: java GraphAlgos.java
- * ==========================================================================
- *
- * PICK THE RIGHT ALGORITHM — this decision table is the whole chapter
- * ┌────────────────────────────────────────┬──────────────────┬────────────────┐
- * │ Problem                                │ Algorithm        │ Complexity     │
- * ├────────────────────────────────────────┼──────────────────┼────────────────┤
- * │ shortest path, UNWEIGHTED              │ BFS              │ O(V+E)         │
- * │ shortest path, weights all 0 or 1      │ 0-1 BFS (deque)  │ O(V+E)         │
- * │ shortest path, NON-NEGATIVE weights    │ Dijkstra         │ O(E log V)     │
- * │ shortest path, NEGATIVE weights        │ Bellman-Ford     │ O(V*E)         │
- * │ detect a negative cycle                │ Bellman-Ford     │ O(V*E)         │
- * │ shortest path, at most K edges         │ Bellman-Ford     │ O(K*E)         │
- * │ ALL pairs shortest paths               │ Floyd-Warshall   │ O(V^3)         │
- * │ minimum spanning tree, dense           │ Prim             │ O(E log V)     │
- * │ minimum spanning tree, sparse/edge list│ Kruskal + DSU    │ O(E log E)     │
- * │ dependency ordering (DAG)              │ Topological sort │ O(V+E)         │
- * │ cycle in a DIRECTED graph              │ DFS 3-colour     │ O(V+E)         │
- * │ cycle in an UNDIRECTED graph           │ Union-Find       │ O(E * alpha)   │
- * │ connected components                   │ DFS/BFS or DSU   │ O(V+E)         │
- * │ maximise path product / weird metrics  │ modified Dijkstra│ O(E log V)     │
- * └────────────────────────────────────────┴──────────────────┴────────────────┘
- *
- * WHY DIJKSTRA FAILS ON NEGATIVE EDGES
- *   Dijkstra finalises a node the moment it's popped, assuming no later path can
- *   be shorter. A negative edge can make a later path shorter. Example:
- *       A --1--> B          A->C = 2
- *       A --2--> C          A->B->C = 1 + (-5) = -4   <- Dijkstra already
- *       B --(-5)--> C                                     locked C at 2
- *
- * GRAPH SHAPES USED IN THIS FILE
- *   weighted, directed:  0 ->(4) 1,  0 ->(1) 2,  2 ->(2) 1,  1 ->(1) 3,  2 ->(5) 3
- *
- *            (4)
- *      0 ----------> 1 ---(1)---> 3
- *      |            ^             ^
- *     (1)          (2)           /
- *      |            |          (5)
- *      +----------> 2 ---------+
- *
- *   shortest 0->3 = 0->2->1->3 = 1+2+1 = 4   (NOT 0->1->3 = 5)
+ * See ./README.md for the "which algorithm do I use" decision table, why
+ * Dijkstra fails on negative edges, and the sample weighted graph diagram —
+ * not repeated here.
  * ========================================================================== */
 public class GraphAlgos {
 
@@ -170,6 +133,8 @@ public class GraphAlgos {
         for (int k = 0; k < n; k++)                    // intermediate vertex, OUTERMOST
             for (int i = 0; i < n; i++)
                 for (int j = 0; j < n; j++)
+                    // guard needed even though "unreachable" is MAX_VALUE: MAX_VALUE + w
+                    // overflows into a negative number and would beat every real distance
                     if (d[i][k] != Integer.MAX_VALUE && d[k][j] != Integer.MAX_VALUE)
                         d[i][j] = Math.min(d[i][j], d[i][k] + d[k][j]);
         return d;
@@ -247,8 +212,8 @@ public class GraphAlgos {
         boolean union(int a, int b) {
             int ra = find(a), rb = find(b);
             if (ra == rb) return false;                 // same set -> would make a cycle
-            if (sz[ra] < sz[rb]) { int t = ra; ra = rb; rb = t; }
-            p[rb] = ra; sz[ra] += sz[rb];
+            if (sz[ra] < sz[rb]) { int t = ra; ra = rb; rb = t; }  // ra := bigger root
+            p[rb] = ra; sz[ra] += sz[rb];                // hang smaller tree under bigger
             return true;
         }
     }
@@ -448,13 +413,5 @@ public class GraphAlgos {
  *   LC 127  Word Ladder                           hard   BFS on an implicit graph
  *   LC 399  Evaluate Division                     med    weighted graph DFS / DSU
  *
- * SELF-TEST QUESTIONS
- *   - Why does Dijkstra break with negative weights? Give a 3-node example.
- *   - Why V-1 rounds in Bellman-Ford, and what does a V-th improving round mean?
- *   - In LC 787, why must you snapshot dist before the round?
- *   - Kahn's: how do you detect a cycle without any extra bookkeeping?
- *   - Why must k be the OUTER loop in Floyd-Warshall?
- *   - Kruskal vs Prim: which fits an edge list, which fits an adjacency list?
- *   - What's the "stale entry" check in lazy Dijkstra and why is it needed?
- *   - When is 0-1 BFS strictly better than Dijkstra?
+ * Self-test questions + answers: see ./README.md
  * ========================================================================== */

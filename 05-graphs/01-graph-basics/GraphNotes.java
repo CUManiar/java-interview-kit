@@ -4,65 +4,8 @@ import java.util.*;
  * DS: GRAPH  (representations + traversals + union-find)
  * Algorithms (Dijkstra, MST, topo sort, etc.) live in ../02-graph-algorithms/GraphAlgos.java
  * Run: java GraphNotes.java
- * ==========================================================================
- *
- * VOCABULARY
- * ----------
- *   V, E            vertices, edges
- *   DIRECTED        edges have a direction (a -> b)
- *   UNDIRECTED      a -- b, stored as BOTH a->b and b->a
- *   WEIGHTED        edges carry a cost
- *   DAG             directed acyclic graph -> topological sort exists
- *   CONNECTED       every vertex reachable from every other (undirected)
- *   DENSE / SPARSE  E ~ V^2  /  E ~ V
- *   DEGREE          edges touching a vertex; in-degree / out-degree when directed
- *
- * THE SAMPLE GRAPH USED IN THIS FILE (undirected)
- * -----------------------------------------------
- *      0 --- 1
- *      |   / |
- *      |  /  |
- *      2 --- 3       4 --- 5      <- two components
- *
- *   adjacency list: 0:[1,2] 1:[0,2,3] 2:[0,1,3] 3:[1,2] 4:[5] 5:[4]
- *
- * REPRESENTATIONS
- * ┌──────────────────┬──────────────┬───────────────┬──────────────────────┐
- * │                  │ Space        │ hasEdge(u,v)  │ iterate neighbours   │
- * ├──────────────────┼──────────────┼───────────────┼──────────────────────┤
- * │ Adjacency LIST   │ O(V+E)       │ O(deg(u))     │ O(deg(u))  BEST      │
- * │ Adjacency MATRIX │ O(V^2)       │ O(1)          │ O(V)                 │
- * │ Edge LIST        │ O(E)         │ O(E)          │ O(E)                 │
- * └──────────────────┴──────────────┴───────────────┴──────────────────────┘
- *   Default to the ADJACENCY LIST. Matrix only for dense graphs or when the
- *   problem literally hands you a matrix (e.g. LC 547 provinces).
- *   Edge list is what Kruskal's MST and Bellman-Ford want.
- *
- * JAVA SHAPES YOU'LL WRITE
- *   Map<Integer, List<Integer>> g = new HashMap<>();            // sparse / labelled
- *   List<List<Integer>> g = new ArrayList<>();                  // vertices 0..n-1
- *   int[][] g = new int[n][n];                                  // matrix
- *   int[][] edges = {{u,v,w}, ...};                             // edge list
- *
- * BFS vs DFS — pick correctly, this is half the interview
- * ┌──────────────────────────────────┬───────┬───────┐
- * │                                  │ BFS   │ DFS   │
- * ├──────────────────────────────────┼───────┼───────┤
- * │ shortest path (UNWEIGHTED)       │ YES   │ no    │
- * │ level / distance information     │ YES   │ no    │
- * │ connected components / flood fill│ yes   │ yes   │
- * │ cycle detection                  │ yes   │ YES   │
- * │ topological sort                 │ Kahn  │ YES   │
- * │ path existence / reachability    │ yes   │ yes   │
- * │ backtracking, all paths          │ no    │ YES   │
- * │ memory                           │ O(w)  │ O(h)  │
- * └──────────────────────────────────┴───────┴───────┘
- *   w = max width of a level, h = max depth. For a wide shallow graph DFS uses
- *   less memory; for a deep narrow graph BFS does.
- *
- * THE #1 BUG: forgetting `visited`, or marking it at the wrong time.
- *   BFS -> mark visited when you ENQUEUE (else duplicates pile up in the queue)
- *   DFS -> mark visited when you ENTER the node
+ * See ./README.md for vocabulary, the sample graph diagram, representation
+ * trade-offs, and the BFS-vs-DFS comparison — not repeated here.
  * ========================================================================== */
 public class GraphNotes {
 
@@ -156,6 +99,7 @@ public class GraphNotes {
         int countComponents() {                       // undirected
             Set<T> seen = new HashSet<>();
             int c = 0;
+            // the ArrayList here is thrown away; dfs's real job is marking `seen`
             for (T v : adj.keySet())
                 if (!seen.contains(v)) { c++; dfs(v, seen, new ArrayList<>()); }
             return c;
@@ -433,13 +377,5 @@ public class GraphNotes {
  *   LC 269  Alien Dictionary                      hard   build graph + topo sort
  *   LC 269/332/778/1584 -> see ../02-graph-algorithms/GraphAlgos.java for Dijkstra/MST/topo
  *
- * SELF-TEST QUESTIONS
- *   - Why mark visited on ENQUEUE in BFS rather than on dequeue?
- *   - Directed cycle detection needs 3 states. What does each mean, and what
- *     goes wrong with only 2?
- *   - When is BFS strictly better than DFS, and vice versa?
- *   - What do path compression and union-by-size each buy you in DSU?
- *   - In cloneGraph, why put the clone in the map before recursing?
- *   - How do you turn a grid problem into a graph problem in one sentence?
- *   - Graph Valid Tree: what two conditions must hold?
+ * Self-test questions + answers: see ./README.md
  * ========================================================================== */

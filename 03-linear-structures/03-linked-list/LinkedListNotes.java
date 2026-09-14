@@ -3,57 +3,9 @@ import java.util.*;
 /* ==========================================================================
  * DS: LINKED LIST  (singly, doubly, circular)
  * Run: java LinkedListNotes.java
- * ==========================================================================
- *
- * MENTAL MODEL
- * ------------
- *   SINGLY
- *     head
- *      |
- *      v
- *     [1|·]──>[2|·]──>[3|null]
- *
- *   DOUBLY
- *     null<─[1|·]<─>[2|·]<─>[3|·]─>null
- *            ^                  ^
- *           head              tail
- *
- * ARRAY vs LINKED LIST — know this table cold
- * ┌──────────────────────┬──────────────┬──────────────┐
- * │ Operation            │ ArrayList    │ LinkedList   │
- * ├──────────────────────┼──────────────┼──────────────┤
- * │ get(i) random access │ O(1)         │ O(n)         │
- * │ insert/delete head   │ O(n) shift   │ O(1)         │
- * │ insert/delete tail   │ O(1) amort.  │ O(1) (dbl)   │
- * │ insert/delete middle │ O(n)         │ O(1) IF you  │
- * │                      │              │ hold the node│
- * │ memory per element   │ low          │ +2 pointers  │
- * │ cache locality       │ excellent    │ terrible     │
- * └──────────────────────┴──────────────┴──────────────┘
- * In real code ArrayList wins ~95% of the time. LinkedList matters in interviews
- * and inside other structures (LRU cache, hash buckets, adjacency lists).
- *
- * THE 3 TECHNIQUES THAT SOLVE ~ALL LINKED LIST PROBLEMS
- * ----------------------------------------------------
- *  1. DUMMY HEAD      -> removes the "what if the head changes" special case
- *  2. TWO POINTERS    -> slow/fast for midpoint, cycle, nth-from-end
- *  3. PREV/CURR/NEXT  -> in-place reversal
- *
- * POINTER-REVERSAL MOVIE (memorise the 4 lines, in order)
- *   prev=null  curr=head
- *     null   [1]->[2]->[3]->null
- *      ^      ^
- *     prev   curr
- *
- *   temp = curr.next        // 1. save the rest before you destroy the link
- *   curr.next = prev        // 2. flip the arrow
- *   prev = curr             // 3. advance prev
- *   curr = temp             // 4. advance curr
- *
- *     null<-[1]   [2]->[3]->null
- *            ^     ^
- *          prev  curr
- *   ...ends with curr==null, prev==new head. RETURN PREV, not curr.
+ * See ./README.md for the mental model, the array-vs-linked-list comparison,
+ * and the 3 core techniques (dummy head, two pointers, prev/curr/next
+ * reversal) — not repeated here.
  * ========================================================================== */
 public class LinkedListNotes {
 
@@ -177,22 +129,10 @@ public class LinkedListNotes {
     }
 
     /* ======================================================================
-     * 3. JAVA API
-     * ======================================================================
-     *   java.util.LinkedList<E> implements BOTH List and Deque.
-     *
-     *     LinkedList<Integer> l = new LinkedList<>();
-     *     l.addFirst(x); l.addLast(x); l.removeFirst(); l.removeLast();
-     *     l.getFirst(); l.getLast(); l.get(i)  <- O(n)! it walks the chain
-     *     l.push(x) == addFirst    l.pop() == removeFirst
-     *
-     *   REALITY CHECK FOR INTERVIEWS:
-     *     - You will almost never use java.util.LinkedList. Problems hand you a
-     *       raw `ListNode` and expect pointer surgery.
-     *     - If you need a deque, use ArrayDeque (faster, less memory).
-     *     - If you need a list, use ArrayList.
-     *     - LinkedList's only real edge: O(1) insert/remove via a ListIterator.
-     */
+     * 3. JAVA API — java.util.LinkedList implements both List and Deque, but
+     * interview problems hand you a raw ListNode and expect pointer surgery
+     * instead. Full syntax reference lives in ../../java-api-examples.md.
+     * ====================================================================== */
 
     /* ======================================================================
      * 4. REVERSE A LINKED LIST  (LC 206) — iterative AND recursive
@@ -321,7 +261,9 @@ public class LinkedListNotes {
         ListNode second = reverseIterative(slow.next);
         slow.next = null;
 
-        // c) weave
+        // c) weave: grab both "rest of list" pointers BEFORE rewiring next,
+        // or first.next = second (etc.) would overwrite the only reference
+        // to the remainder of that half and strand it.
         ListNode first = head;
         while (second != null) {
             ListNode t1 = first.next, t2 = second.next;
@@ -399,11 +341,5 @@ public class LinkedListNotes {
  *   LC 146  LRU Cache                             med    HashMap + doubly linked list
  *   LC 287  Find the Duplicate Number             med    Floyd on an ARRAY
  *
- * SELF-TEST QUESTIONS
- *   - Why does iterative reversal return `prev` and not `curr`?
- *   - In recursive reversal, what happens if you skip `head.next = null`?
- *   - Prove why Floyd's reset-to-head finds the cycle entry.
- *   - When does a dummy head save you, specifically?
- *   - Why can a doubly linked list remove a node in O(1) but a singly one can't?
- *   - When would you genuinely pick java.util.LinkedList over ArrayList?
+ * Self-test questions + answers: see ./README.md
  * ========================================================================== */

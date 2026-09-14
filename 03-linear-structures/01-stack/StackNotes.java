@@ -3,38 +3,8 @@ import java.util.*;
 /* ==========================================================================
  * DS: STACK  (LIFO - Last In, First Out)
  * Run: java StackNotes.java
- * ==========================================================================
- *
- * MENTAL MODEL
- * ------------
- *   push(1) push(2) push(3)            pop() -> 3
- *
- *      top -> [ 3 ]                        top -> [ 2 ]
- *             [ 2 ]                               [ 1 ]
- *             [ 1 ]                               -----
- *             -----
- *
- * Linked-list view (what we implement):
- *
- *   top
- *    |
- *    v
- *   [3|next]--->[2|next]--->[1|null]
- *
- *   push: newNode.next = top; top = newNode;      <- O(1), prepend
- *   pop : val = top.data;   top = top.next;       <- O(1), behead
- *
- * COMPLEXITY
- * ----------
- *   push O(1) | pop O(1) | peek O(1) | search O(n) | space O(n)
- *
- * WHEN THE INTERVIEWER EXPECTS A STACK
- * ------------------------------------
- *   - matching/balancing pairs  ()[]{}
- *   - "previous/next greater or smaller element"  -> MONOTONIC STACK
- *   - undo history, backtracking, DFS iterative
- *   - expression parsing / evaluation (RPN, infix)
- *   - anything with nested structure
+ * See ./README.md for the mental model, complexity, and when to reach
+ * for a stack — not repeated here.
  * ========================================================================== */
 public class StackNotes {
 
@@ -170,29 +140,9 @@ public class StackNotes {
 
     /*
      * ======================================================================
-     * 4. JAVA API — WHAT TO ACTUALLY TYPE IN AN INTERVIEW
+     * 4. JAVA API — ArrayDeque used as a stack, demonstrated live in main()
+     * below. Full Deque syntax reference lives in ../../java-api-examples.md.
      * ======================================================================
-     *
-     * ┌────────────────────────────────────────────────────────────────┐
-     * │ DO NOT USE java.util.Stack. It extends Vector, every method is │
-     * │ synchronized, and it iterates BOTTOM-TO-TOP which is backwards.│
-     * │ USE ArrayDeque. Say this out loud in the interview, it scores. │
-     * └────────────────────────────────────────────────────────────────┘
-     *
-     * Deque<Integer> st = new ArrayDeque<>();
-     *
-     * st.push(x) // == addFirst -> O(1)
-     * st.pop() // == removeFirst, throws NoSuchElementException if empty
-     * st.peek() // == peekFirst, returns null if empty
-     * st.isEmpty()
-     * st.size()
-     *
-     * THROWS vs RETURNS-NULL (Deque has both flavours):
-     * throws: addFirst / removeFirst / getFirst
-     * null: offerFirst / pollFirst / peekFirst
-     *
-     * Iterating an ArrayDeque used as a stack goes TOP -> BOTTOM. Correct.
-     * ArrayDeque forbids null elements. Use LinkedList if you truly need nulls.
      */
 
     /*
@@ -356,10 +306,6 @@ public class StackNotes {
  * LC 394 Decode String med two stacks (num, str)
  * LC 42 Trapping Rain Water hard stack OR two-pointer
  *
- * SELF-TEST QUESTIONS
- * - Why ArrayDeque over java.util.Stack?
- * - What is the amortized cost of push on an array-backed stack, and why?
- * - How do you recognise a monotonic stack problem from the prompt?
- * - Why is a monotonic stack O(n) and not O(n^2)?
+ * Self-test questions + answers: see ./README.md
  * ==========================================================================
  */

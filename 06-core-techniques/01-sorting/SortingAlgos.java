@@ -3,46 +3,9 @@ import java.util.*;
 /* ==========================================================================
  * ALGOS: SORTING
  * Run: java SortingAlgos.java
- * ==========================================================================
- *
- * THE TABLE — know this cold, you will be asked
- * ┌──────────────┬──────────┬──────────┬──────────┬────────┬────────┬──────────────────────┐
- * │ Algorithm    │ Best     │ Average  │ Worst    │ Space  │ Stable │ Notes                │
- * ├──────────────┼──────────┼──────────┼──────────┼────────┼────────┼──────────────────────┤
- * │ Bubble       │ O(n)     │ O(n^2)   │ O(n^2)   │ O(1)   │ YES    │ teaching only        │
- * │ Selection    │ O(n^2)   │ O(n^2)   │ O(n^2)   │ O(1)   │ no     │ fewest swaps: n-1    │
- * │ Insertion    │ O(n)     │ O(n^2)   │ O(n^2)   │ O(1)   │ YES    │ great for small/near │
- * │              │          │          │          │        │        │ sorted; used inside  │
- * │              │          │          │          │        │        │ real sorts for n<~32 │
- * │ Merge        │ O(n logn)│ O(n logn)│ O(n logn)│ O(n)   │ YES    │ predictable; linked  │
- * │              │          │          │          │        │        │ lists; external sort │
- * │ Quick        │ O(n logn)│ O(n logn)│ O(n^2)   │ O(logn)│ no     │ fastest in practice  │
- * │ Heap         │ O(n logn)│ O(n logn)│ O(n logn)│ O(1)   │ no     │ in-place, poor cache │
- * │ Counting     │ O(n+k)   │ O(n+k)   │ O(n+k)   │ O(k)   │ YES    │ small integer range  │
- * │ Radix        │ O(d(n+k))│ O(d(n+k))│ O(d(n+k))│ O(n+k) │ YES    │ fixed-width keys     │
- * │ Bucket       │ O(n+k)   │ O(n+k)   │ O(n^2)   │ O(n)   │ YES    │ uniform distribution │
- * └──────────────┴──────────┴──────────┴──────────┴────────┴────────┴──────────────────────┘
- *
- * WHAT "STABLE" MEANS AND WHY IT MATTERS
- *   Equal elements keep their relative order.
- *   [("b",2), ("a",2)] sorted by the number stays in that order if stable.
- *   Matters when you sort by one key and then another (multi-key sorting), and
- *   for anything user-facing where order is meaningful.
- *
- * THE O(n log n) LOWER BOUND
- *   Any COMPARISON sort needs Omega(n log n): there are n! permutations, a binary
- *   decision tree with n! leaves has height >= log2(n!) = Omega(n log n).
- *   Counting/radix/bucket beat it only because they DON'T compare - they exploit
- *   the structure of the keys.
- *
- * WHAT JAVA ACTUALLY DOES  (say this, it lands well)
- *   Arrays.sort(int[])      -> DUAL-PIVOT QUICKSORT. Not stable. O(1) extra space.
- *                              Stability doesn't matter for primitives - two equal
- *                              ints are indistinguishable.
- *   Arrays.sort(Object[])   -> TIMSORT (merge + insertion hybrid). STABLE. O(n) space.
- *   Collections.sort(List)  -> delegates to List.sort -> Timsort.
- *   Arrays.parallelSort()   -> parallel merge sort, worth it above ~8k elements.
- *   Timsort finds existing sorted "runs" and merges them -> O(n) on sorted input.
+ * See ./README.md for the complexity table, what "stable" means, the
+ * O(n log n) comparison-sort lower bound, and what Arrays.sort/Collections.sort
+ * actually do under the hood — not repeated here.
  * ========================================================================== */
 public class SortingAlgos {
 
@@ -267,38 +230,11 @@ public class SortingAlgos {
     }
 
     /* ======================================================================
-     * 11. JAVA API — WHAT YOU ACTUALLY CALL
-     * ======================================================================
-     *   Arrays.sort(int[])                       dual-pivot quicksort, not stable
-     *   Arrays.sort(int[], from, to)             partial range
-     *   Arrays.sort(Integer[])                   TIMSORT, stable
-     *   Arrays.sort(T[], comparator)
-     *   Arrays.parallelSort(arr)                 worth it for n > ~8192
-     *   Collections.sort(list)  /  list.sort(cmp)
-     *   Arrays.binarySearch(sortedArr, key)      returns -(insertionPoint)-1 if absent
-     *
-     *   ── TRAP: THERE IS NO Arrays.sort(int[], Comparator) ──────────────
-     *   You CANNOT sort a primitive array with a comparator (e.g. descending).
-     *   Options:
-     *     a) box it:  Integer[] b = Arrays.stream(a).boxed().toArray(Integer[]::new);
-     *                 Arrays.sort(b, Comparator.reverseOrder());
-     *     b) sort ascending then reverse in place
-     *     c) negate, sort, negate back
-     *
-     *   ── COMPARATORS ────────────────────────────────────────────────────
-     *     Comparator.naturalOrder() / reverseOrder()
-     *     Comparator.comparingInt(Person::age)
-     *     Comparator.comparing(Person::name).thenComparingInt(Person::age)
-     *     cmp.reversed()
-     *     Comparator.nullsFirst(cmp)
-     *     // 2D array by column 0, then column 1:
-     *     Arrays.sort(intervals, (x,y) -> x[0]!=y[0] ? x[0]-y[0] : x[1]-y[1]);
-     *     Arrays.sort(intervals, Comparator.<int[]>comparingInt(x -> x[0])
-     *                                       .thenComparingInt(x -> x[1]));  // overflow-safe
-     *
-     *   ── SORTING 2D INTERVALS: the single most common interview sort ────
-     *     Arrays.sort(intervals, Comparator.comparingInt(a -> a[0]));
-     */
+     * 11. JAVA API — demonstrated live in main() below: there is no
+     * Arrays.sort(int[], Comparator) (box to Integer[] to sort descending),
+     * and 2D-interval sorting via comparingInt().thenComparingInt(). Full
+     * comparator/Arrays syntax reference lives in ../../java-api-examples.md.
+     * ====================================================================== */
 
     /* helpers */
     private static void swap(int[] a, int i, int j) { int t = a[i]; a[i] = a[j]; a[j] = t; }
@@ -362,13 +298,5 @@ public class SortingAlgos {
  *   LC 347  Top K Frequent                        med    BUCKET sort
  *   LC 164  Maximum Gap                           hard   radix/bucket, O(n)
  *
- * SELF-TEST QUESTIONS
- *   - Which sorts are stable, and why does it matter?
- *   - Why is O(n log n) a lower bound for comparison sorts?
- *   - Why does Java use quicksort for primitives and timsort for objects?
- *   - Make quicksort O(n^2). Now fix it.
- *   - Why is quickselect O(n) but quicksort O(n log n)?
- *   - Why does counting sort walk the input backwards?
- *   - How do you sort an int[] in descending order in Java? (trick question)
- *   - Why is `mid = lo + (hi-lo)/2` and not `(lo+hi)/2`?
+ * Self-test questions + answers: see ./README.md
  * ========================================================================== */

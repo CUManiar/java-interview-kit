@@ -39,8 +39,14 @@ Classic exact-match binary search (LC 704), lower/upper bound (the two most reus
 
 ## Self-test
 - Write the overflow-safe mid. Why does the naive form break?
+  > `mid = lo + (hi - lo) / 2`, used throughout (`binarySearch`, `lowerBound`, etc.). The naive `(lo + hi) / 2` breaks because `lo + hi` can overflow `int` when both are large — near `Integer.MAX_VALUE` the sum wraps negative, producing a nonsensical `mid` and either an `ArrayIndexOutOfBoundsException` or a corrupted search.
 - When do you need mid rounded UP, and why?
+  > When your loop narrows with `lo = mid` (not `mid + 1`) — i.e. `mid` itself might still be the answer and must stay in play. With floor-rounded `mid = lo + (hi-lo)/2`, if `hi == lo + 1` then `mid == lo`, so `lo = mid` doesn't move `lo` and the loop never terminates. Rounding up, `mid = lo + (hi-lo+1)/2`, forces `mid` past `lo` in that case.
 - What does `Arrays.binarySearch` return for a missing key, and how do you turn it into an insertion index?
+  > `-(insertionPoint) - 1` — always negative when the key is absent, since a real index is never negative. Recover the insertion point with `int ip = -result - 1;` (shown in `SearchAlgos.main`).
 - Rotated array: what's the invariant that makes it work?
+  > At any `mid`, at least one of `[lo..mid]` or `[mid..hi]` is a contiguous, un-rotated (fully sorted) run, because the array has at most one rotation point. `searchRotated` checks `a[lo] <= a[mid]` to determine which half is sorted, then checks whether `target` falls inside that sorted half's value range to decide which side to keep and which to discard.
 - Recognizing "binary search on the answer": what must be true of `feasible()`?
+  > It must be monotonic over the answer range — `false...false, true...true` (or the mirror image) — so there's exactly one boundary to search for. `minEatingSpeed`'s `canFinish` is exactly this: if speed `k` finishes in time, every speed greater than `k` finishes too.
 - Why search the SHORTER array in median-of-two-sorted-arrays?
+  > The binary search walks `i` from `0` to `m` (A's length) and derives `j = half - i` for B. If you searched the longer array instead, `i` could range up to that longer length while `half` is roughly half the combined length, forcing `j = half - i` negative — out of bounds. Searching the shorter array (enforced by `if (A.length > B.length) return findMedianSortedArrays(B, A);`) keeps `j` always within `[0, n]`, and incidentally gives the O(log(min(m,n))) time bound the method is named for.

@@ -50,9 +50,18 @@ From-scratch implementation (separate chaining + resize), writing a correct cust
 
 ## Self-test
 - What breaks if you override `equals` but not `hashCode`?
+  > Two objects that are `.equals()` can land in different buckets (rule 1 is broken). The map ends up with "duplicate" keys, `get`/`containsKey` silently fail to find an entry you already put in, and `HashSet` stops deduping. Classic symptom: `map.put(key1, v); map.get(key2)` returns `null` even though `key1.equals(key2)`.
 - Why must HashMap capacity be a power of two?
+  > So bucket index can be computed with `hash & (cap-1)` instead of `hash % cap`. When cap is a power of two, `cap-1` is all 1-bits, making `&` mathematically equal to `%` but much cheaper — and it guarantees every bit pattern of `cap-1` is reachable, so resizing (always ×2) cleanly rehashes.
 - What does `h ^ (h >>> 16)` buy you?
+  > It XORs the high 16 bits of the hash into the low 16 bits before masking. Since `& (cap-1)` only looks at low bits, hashCodes that differ only in high bits would otherwise all collide; spreading mixes that entropy down cheaply.
 - At what chain length does Java treeify a bucket, and why?
+  > At 8 nodes in one bucket (and only if the table itself has ≥ 64 buckets — otherwise it resizes instead). It converts the linked list to a red-black tree so worst-case lookup in that bucket goes from O(n) to O(log n), guarding against bad/adversarial `hashCode()` implementations. Untreeifies back to a list below 6 nodes.
 - Difference between `HashMap`, `ConcurrentHashMap`, and `Hashtable`?
+  > `HashMap` — not thread-safe, allows one `null` key and many `null` values, fastest for single-threaded use. `Hashtable` — legacy, thread-safe via one lock on the whole table (coarse-grained, so heavy contention under concurrency), no `null` keys/values allowed. `ConcurrentHashMap` — thread-safe via fine-grained locking/CAS (per-bin, not whole-table), much higher concurrent throughput than `Hashtable`, no `null` keys/values allowed either.
 - Why is `containsKey` not the same as `get(k) != null`?
+  > `get(k)` returns `null` in two different cases: the key isn't present, *or* the key is present and mapped to a stored `null` value. You can't tell those apart from the return value alone. `containsKey(k)` unambiguously answers "is this key present," regardless of what it maps to.
 - Explain `merge()` vs `compute()` vs `computeIfAbsent()`.
+  > `computeIfAbsent(k, fn)` — only runs `fn` and inserts if `k` is absent (or mapped to `null`); leaves an existing non-null value untouched. Classic use: `map.computeIfAbsent(k, x -> new ArrayList<>()).add(v)`.
+  > `compute(k, fn)` — always runs `fn(k, currentValueOrNull)` regardless of presence; whatever it returns becomes the new value, and returning `null` removes the entry. Most general of the three.
+  > `merge(k, v, fn)` — if `k` is absent, just stores `v`; if present, stores `fn(oldValue, v)`; returning `null` from `fn` removes the entry. Classic use: frequency counting, `map.merge(k, 1, Integer::sum)`.

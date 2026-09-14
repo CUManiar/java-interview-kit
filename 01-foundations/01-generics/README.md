@@ -57,8 +57,14 @@ Generic class, generic class with two params (`Pair` = `Map.Entry`), bounded typ
 
 ## Self-test
 - What does type erasure remove at runtime, and name three consequences.
+  > It removes the generic type arguments/bounds from bytecode; the JVM uses the raw type (typically `Object` for `T`). Consequences: you cannot do `new T()`, `new T[10]`, or `instanceof List<String>` (only `instanceof List<?>`); overloads like `f(List<String>)` and `f(List<Integer>)` erase to the same signature and won't compile; and generic type information is unavailable for reflection or runtime checks.
 - Why can't you write `new T[10]`? What's the workaround?
+  > Arrays are reified (they know and enforce their component type at runtime) but generics are erased, so the JVM has no `T` to give the array. The workaround used in `DynArray<T>`: `data = (T[]) new Object[cap];` with `@SuppressWarnings("unchecked")` on the assignment, containing the heap pollution to one spot.
 - State PECS in one sentence and give the JDK method signature that proves it.
+  > Use `? extends` for producers (things you only read from) and `? super` for consumers (things you only write to). Proof: `Collections.copy(List<? super T> dest, List<? extends T> src)` — `dest` consumes `T` so it's `super`, `src` produces `T` so it's `extends`.
 - Why is `List<String>` not a subtype of `List<Object>`?
+  > Because generics are invariant. If `List<String>` were assignable to `List<Object>`, you could insert an `Integer` through the `List<Object>` reference into what is actually a `List<String>`, breaking type safety at runtime.
 - When would you write `<T extends A & B>`?
+  > When the type parameter must both be a subtype of concrete class `A` and implement interface `B`. The class bound comes first, interfaces after — there's no `implements` keyword in a bound, just repeated `&`.
 - Why can static fields not be parameterized per generic instance?
+  > Static members belong to the class itself, and erasure collapses every parameterization (`Box<String>`, `Box<Integer>`, ...) down to one raw class in bytecode. There is only ever one copy of a static field, shared across all instantiations.

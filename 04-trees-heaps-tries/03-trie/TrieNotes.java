@@ -3,71 +3,9 @@ import java.util.*;
 /* ==========================================================================
  * DS: TRIE  (prefix tree, pronounced "try", from reTRIEval)
  * Run: java TrieNotes.java
- * ==========================================================================
- *
- * WHAT IT IS
- * ----------
- * A tree where each EDGE is a character and each PATH from the root spells a
- * prefix. Words that share a prefix share the path. The character is encoded in
- * the edge/index, NOT stored in the node.
- *
- * INSERTING: cat, car, card, dog
- *
- *                (root)
- *                /    \
- *              c        d
- *             /          \
- *            a            o
- *           / \            \
- *          t*  r*           g*
- *               \
- *                d*
- *
- *   * = isEnd (a complete word ends here)
- *   "car" and "card" share 3 nodes. "ca" exists as a prefix but is NOT a word.
- *
- * WHY isEnd IS MANDATORY
- *   Without it you cannot distinguish "is 'ca' a stored word?" from "is 'ca' a
- *   prefix of something?". search() checks isEnd; startsWith() does not.
- *
- * NODE LAYOUT — two options
- * -------------------------
- *   A) TrieNode[] children = new TrieNode[26];
- *      O(1) lookup, but 26 refs per node (~208 bytes) even when mostly null.
- *      Use for lowercase a-z. Index = c - 'a'. This is the interview default.
- *   B) Map<Character, TrieNode> children = new HashMap<>();
- *      Memory proportional to actual branches. Use for unicode / large alphabets.
- *
- * COMPLEXITY  (L = word length, N = number of words, A = alphabet size)
- * ---------------------------------------------------------------------
- *   insert      O(L)
- *   search      O(L)
- *   startsWith  O(L)
- *   delete      O(L)
- *   space       O(N * L * A) worst case with arrays; much less when prefixes overlap
- *
- *   Note: these do NOT depend on N. That's the whole point - a HashMap<String,?>
- *   also gives O(L) lookup (hashing reads the whole string), but it CANNOT answer
- *   prefix queries. Prefix search is the trie's reason to exist.
- *
- * TRIE vs HASHMAP
- * ┌────────────────────────────┬───────────┬────────────┐
- * │                            │ Trie      │ HashMap    │
- * ├────────────────────────────┼───────────┼────────────┤
- * │ exact lookup               │ O(L)      │ O(L)       │
- * │ prefix "starts with"       │ O(L)      │ O(N*L)     │
- * │ list all words with prefix │ O(result) │ O(N*L)     │
- * │ lexicographic iteration    │ free (DFS)│ needs sort │
- * │ memory                     │ heavier   │ lighter    │
- * └────────────────────────────┴───────────┴────────────┘
- *
- * WHEN THE INTERVIEWER EXPECTS A TRIE
- *   - autocomplete / typeahead / search suggestions
- *   - spell check, "words within edit distance"
- *   - wildcard matching against a dictionary ('.' matches any char)
- *   - "find all dictionary words in this grid"  -> LC 212, trie + DFS
- *   - IP routing tables, T9 predictive text
- *   - XOR maximization on integers -> BINARY TRIE (bit-level, 2 children)
+ * See ./README.md for the mental model (edge = character), why isEnd is
+ * mandatory, node-layout options, complexity, and trie-vs-hashmap — not
+ * repeated here.
  * ========================================================================== */
 public class TrieNotes {
 
@@ -393,13 +331,5 @@ public class TrieNotes {
  *   LC 745  Prefix and Suffix Search              hard   two tries or combined keys
  *   LC 336  Palindrome Pairs                      hard   reversed-word trie
  *
- * SELF-TEST QUESTIONS
- *   - Why can't a HashMap<String,Boolean> answer "give me all words starting with 'car'"
- *     efficiently, while a trie can?
- *   - What exactly does isEnd buy you?
- *   - When would you use HashMap children instead of a 26-slot array?
- *   - In delete(), when is it safe to prune a node?
- *   - In Word Search II, why null out node.word after adding it to the result?
- *   - In the grid DFS, why restore b[r][c] on the way out?
- *   - Binary trie: why does walking to the opposite bit maximise XOR?
+ * Self-test questions + answers: see ./README.md
  * ========================================================================== */

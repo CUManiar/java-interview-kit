@@ -3,62 +3,8 @@ import java.util.*;
 /* ==========================================================================
  * DS: BINARY TREE / BINARY SEARCH TREE
  * Run: java TreeNotes.java
- * ==========================================================================
- *
- * VOCABULARY
- * ----------
- *   BINARY TREE        every node has <= 2 children. No ordering rule.
- *   BST                left subtree < node < right subtree. ALL of it, not just kids.
- *   FULL               every node has 0 or 2 children
- *   COMPLETE           all levels filled except possibly the last, filled left->right
- *                      (this is what a HEAP is - hence array representation)
- *   PERFECT            full AND all leaves at the same depth. n = 2^h - 1
- *   BALANCED           |height(left) - height(right)| <= 1 for every node
- *   HEIGHT of node     edges on the longest path down to a leaf (leaf = 0)
- *   DEPTH of node      edges from root down to the node (root = 0)
- *
- * THE SAMPLE TREE USED THROUGHOUT THIS FILE
- * -----------------------------------------
- *                 8
- *               /   \
- *              3     10
- *             / \      \
- *            1   6      14
- *               / \     /
- *              4   7   13
- *
- * TRAVERSALS — the whole game
- * ---------------------------
- *   DFS (recursion / explicit stack)
- *     PREORDER   node, left, right   -> 8 3 1 6 4 7 10 14 13   (copy/serialize a tree)
- *     INORDER    left, node, right   -> 1 3 4 6 7 8 10 13 14   (SORTED for a BST!)
- *     POSTORDER  left, right, node   -> 1 4 7 6 3 13 14 10 8   (delete, bottom-up sums)
- *   BFS (queue)
- *     LEVEL ORDER                    -> 8 | 3 10 | 1 6 14 | 4 7 13
- *
- *   MEMORY HOOK: the prefix says WHERE THE NODE IS VISITED.
- *     PRE-order  = node FIRST
- *     IN-order   = node in the MIDDLE
- *     POST-order = node LAST
- *
- *   "Inorder of a BST is sorted" is the single most reused fact in tree interviews.
- *
- * COMPLEXITY
- * ----------
- *   BST search/insert/delete: O(h). h = log n if balanced, n if degenerate (sorted input).
- *   Traversals: O(n) time, O(h) space for recursion stack.
- *   Self-balancing (AVL / Red-Black) forces h = O(log n). TreeMap is a red-black tree.
- *
- * RECURSION TEMPLATE — every tree problem fits one of these two shapes
- * --------------------------------------------------------------------
- *   TOP-DOWN  (pass state down):        POST-ORDER / BOTTOM-UP (return info up):
- *     void go(node, state) {              R go(node) {
- *       if (node == null) return;           if (node==null) return BASE;
- *       use(state);                         R l = go(node.left);
- *       go(node.left,  state');             R r = go(node.right);
- *       go(node.right, state');             return combine(l, r, node);
- *     }                                   }
- *   When in doubt, reach for bottom-up. It solves diameter, balanced, LCA, max-path-sum.
+ * See ./README.md for vocabulary, the sample tree, traversal orders,
+ * complexity, and the top-down/bottom-up recursion template — not repeated here.
  * ========================================================================== */
 public class TreeNotes {
 
@@ -407,24 +353,10 @@ public class TreeNotes {
     }
 
     /* ======================================================================
-     * 5. JAVA API — TreeMap / TreeSet are red-black trees. Use them, don't build one.
-     * ======================================================================
-     *   TreeSet<Integer> ts = new TreeSet<>();      // sorted, O(log n), no dupes
-     *     ts.first() ts.last() ts.floor(x) ts.ceiling(x) ts.lower(x) ts.higher(x)
-     *     ts.headSet(x) ts.tailSet(x) ts.subSet(a,b) ts.pollFirst() ts.descendingSet()
-     *
-     *   TreeMap<K,V> tm = new TreeMap<>(comparator);
-     *     firstKey lastKey floorKey ceilingKey lowerKey higherKey
-     *     firstEntry lastEntry pollFirstEntry headMap tailMap subMap descendingMap
-     *
-     *   WHEN THEY BEAT A HASHMAP:
-     *     - "find the closest value <= x"                    -> floorKey
-     *     - "all items in the range [a,b)"                   -> subMap
-     *     - "keep a running sorted multiset"                 -> TreeMap<val,count>
-     *     - calendar/booking overlap problems (LC 729/731)   -> floorEntry+ceilingEntry
-     *
-     *   There is no built-in java.util BinaryTree. Nodes are always hand-rolled.
-     */
+     * 5. JAVA API — TreeMap/TreeSet (red-black trees) demonstrated live in
+     * main() below. Full method reference lives in ../../java-api-examples.md.
+     * Note: there is no built-in java.util BinaryTree — nodes are always hand-rolled.
+     * ====================================================================== */
 
     /* helper: build the sample tree */
     static TreeNode sample() {
@@ -509,12 +441,5 @@ public class TreeNotes {
  *   LC 124  Binary Tree Max Path Sum              hard   clamp negatives at 0
  *   LC 297  Serialize / Deserialize               hard   preorder with '#'
  *
- * SELF-TEST QUESTIONS
- *   - Why is inorder of a BST sorted?
- *   - Give a tree where checking node-vs-children wrongly says "valid BST".
- *   - Why does the balanced check need the -1 sentinel to be O(n)?
- *   - Diameter: why does the node return height but update the answer with l+r?
- *   - Max path sum: why clamp child gains at 0?
- *   - Delete from BST with 2 children: which node replaces it and why?
- *   - Postorder iterative: why does the reversed (node,right,left) trick work?
+ * Self-test questions + answers: see ./README.md
  * ========================================================================== */

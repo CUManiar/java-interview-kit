@@ -3,50 +3,9 @@ import java.util.*;
 /* ==========================================================================
  * ALGOS: TWO POINTERS, SLIDING WINDOW, PREFIX SUMS
  * Run: java TwoPointerSlidingWindow.java
- * ==========================================================================
- *
- * These three patterns cover a huge slice of array/string interview questions.
- * Recognising which one applies is 80% of the work.
- *
- * ── TWO POINTERS ───────────────────────────────────────────────────────────
- *   Shape A: OPPOSITE ENDS, converging. Needs a SORTED array (or symmetry).
- *       [1, 3, 5, 7, 9]   target sum = 10
- *        L           R     1+9=10 -> found
- *       Move L right to increase the sum, R left to decrease it.
- *       Signals: "sorted", "pair that sums to", "palindrome", "container/area"
- *
- *   Shape B: SAME DIRECTION, fast/slow. In-place filtering/compaction.
- *       slow = write position, fast = read position
- *       Signals: "remove duplicates in place", "move zeroes", "partition"
- *
- * ── SLIDING WINDOW ─────────────────────────────────────────────────────────
- *   A contiguous window [left, right] that expands on the right and shrinks
- *   from the left. Each index enters once and leaves once -> O(n).
- *
- *       for (right = 0..n-1) {
- *           add arr[right] to the window state
- *           while (window is INVALID) { remove arr[left]; left++; }
- *           answer = max/min(answer, right - left + 1)
- *       }
- *
- *   FIXED size k  -> shrink exactly when (right - left + 1) > k
- *   VARIABLE size -> shrink while some constraint is violated
- *   Signals: "contiguous", "substring", "subarray", "at most K", "longest/shortest"
- *
- *   TRAP: sliding window needs the constraint to be MONOTONIC in window size.
- *   "Subarray sum equals K" with NEGATIVE numbers is NOT a sliding window
- *   problem - growing the window doesn't monotonically grow the sum. Use a
- *   prefix-sum hash map instead.
- *
- * ── PREFIX SUMS ────────────────────────────────────────────────────────────
- *   prefix[i] = sum of the first i elements.  sum(i..j) = prefix[j+1] - prefix[i]
- *
- *       nums   =  [ 2,  4,  1,  3 ]
- *       prefix = [0, 2,  6,  7, 10]
- *       sum(1..2) = prefix[3] - prefix[1] = 7 - 2 = 5
- *
- *   Combine with a HashMap of "how many times have I seen this prefix" to count
- *   subarrays with a given sum in O(n) EVEN WITH NEGATIVE NUMBERS.
+ * See ./README.md for the mental model of the two two-pointer shapes, the
+ * sliding-window template (and why it breaks with negative numbers), and the
+ * prefix-sum + HashMap trick that covers that gap — not repeated here.
  * ========================================================================== */
 public class TwoPointerSlidingWindow {
 
@@ -336,23 +295,11 @@ public class TwoPointerSlidingWindow {
     }
 
     /* ======================================================================
-     * JAVA API NOTES FOR ARRAY/STRING WORK
-     * ======================================================================
-     *   Arrays.fill(a, v)   Arrays.copyOf(a, n)   Arrays.copyOfRange(a, from, to)
-     *   Arrays.equals(a, b) Arrays.deepToString(2d)  Arrays.stream(a).sum()/max()
-     *   System.arraycopy(src, sPos, dst, dPos, len)   // fastest bulk copy
-     *
-     *   STRINGS:
-     *     s.charAt(i)  s.substring(a,b)  s.toCharArray()  s.indexOf(x)
-     *     s.chars() -> IntStream         String.valueOf(charArray)
-     *     STRINGS ARE IMMUTABLE. Concatenating in a loop is O(n^2).
-     *     Use StringBuilder: sb.append / sb.insert / sb.reverse /
-     *                        sb.deleteCharAt / sb.setLength(0) / sb.toString()
-     *     String.join(",", list)     s.split(",")    s.strip()   s.repeat(n)
-     *
-     *   CHAR MATH: c - 'a' gives 0..25.  (char)('a' + i) goes back.
-     *     Character.isLetterOrDigit / isDigit / toLowerCase
-     */
+     * JAVA API NOTES FOR ARRAY/STRING WORK — demonstrated live above (char
+     * math via c - 'a', Character.isLetterOrDigit in isPalindrome). Full
+     * Arrays/String/StringBuilder syntax reference lives in
+     * ../../java-api-examples.md.
+     * ====================================================================== */
 
     private static void swap(int[] a, int i, int j) { int t = a[i]; a[i] = a[j]; a[j] = t; }
 
@@ -441,12 +388,5 @@ public class TwoPointerSlidingWindow {
  *   LC 525  Contiguous Array                      med    map 0 -> -1, prefix
  *   LC 304  Range Sum Query 2D                    med    2D prefix sums
  *
- * SELF-TEST QUESTIONS
- *   - How do you tell a sliding window problem from a prefix-sum problem?
- *   - Why does sliding window fail when the array contains negatives?
- *   - Container With Most Water: prove moving the taller pointer can't help.
- *   - LC 3: why Math.max when updating left?
- *   - LC 424: why is never decreasing maxCount still correct?
- *   - Sort Colors: why don't you increment mid after swapping with high?
- *   - LC 560: why seed the map with {0: 1}?
+ * Self-test questions + answers: see ./README.md
  * ========================================================================== */

@@ -51,10 +51,18 @@ Subsets (LC 78, the base template), Permutations (LC 46), Combination Sum (LC 39
 
 ## Self-test
 - Write the 4-line backtracking skeleton from memory.
+  > `if (goalReached) { record(path); return; }` then loop over choices: `if (!valid(choice)) continue;` (prune), `path.add(choice)` (choose), `backtrack(path, next)` (explore), `path.remove(last)` (undo).
 - Why `new ArrayList<>(path)` and not `path` when recording a result?
+  > `path` is one mutable list reused across the whole recursion — every subsequent `add`/`remove` mutates it in place. Storing the bare reference in `res` means every "saved" result actually points to the same object, which ends up empty (or wrong) once backtracking pops everything back out. `new ArrayList<>(path)` copies the current contents into an independent list that later mutation can't touch.
 - Combination Sum I recurses with `i`, II with `i+1`. Why?
+  > Combination Sum I (LC 39) allows unlimited reuse of a candidate, so recursing with `combo(c, remain - c[i], i, ...)` keeps `i` as the next start index, letting the same element be chosen again. Combination Sum II (LC 40) treats candidates as a multiset used at most once each, so it recurses with `i + 1`, advancing past the current index so it can never repeat.
 - The duplicate-skip guard is `i > start`, not `i > 0`. Why does that matter?
+  > `i > start` only skips a value when it duplicates the *previous sibling already tried at this same recursion level* (same `for` loop). `i > 0` would instead compare against `nums[i-1]` even when `i-1` belongs to an ancestor call (already baked into `path`, not a rejected sibling), incorrectly skipping valid combinations that legitimately reuse a duplicate value across different depths (e.g. `[2,2]`).
 - N-Queens: what are `r-c` and `r+c`, and why offset the diagonal index by n?
+  > `r-c` is constant along every "\" diagonal and `r+c` is constant along every "/" diagonal, so each value uniquely identifies one diagonal for an O(1) `boolean[]` lookup. `r-c` ranges from `-(n-1)` to `n-1`, which includes negatives that can't index an array, so the code adds `n` (`r - c + n`) to shift it into `[0, 2n-2]`. `r+c` already ranges from `0` to `2n-2`, so it needs no offset.
 - Word Search: why restore the cell, and why doesn't flood fill need to?
+  > Word Search backtracks: a cell marked `'#'` for one candidate direction must look unvisited again for a sibling branch (a different direction, or a different starting cell's search), so `b[r][c] = saved` undoes the mark once that branch is done. Flood fill (e.g. counting islands) never needs a cell to look unvisited to a different branch — each cell belongs to exactly one connected component and stays marked for the rest of the traversal, so there's no undo step.
 - Merge Intervals sorts by start; Erase Overlap Intervals sorts by end. Why the difference?
+  > Merge Intervals just needs to sweep intervals in the order they begin so a running `end` can be extended or flushed — sorting by start is enough. Erase Overlap Intervals is greedy interval scheduling: to keep the maximum number of non-overlapping intervals you always keep whichever interval finishes earliest, since it leaves the most room for everything after it, which requires sorting by end.
 - What does `x & (x-1)` do, and what's it used for?
+  > It clears the lowest set bit of `x` (`x-1` turns the trailing zeros into ones and the lowest set bit into zero, so ANDing with `x` zeroes just that bit). Used in `hammingWeight` to count set bits in one iteration per set bit instead of per bit position (Brian Kernighan's algorithm), and to test for a power of two: `(x & (x-1)) == 0` for `x > 0`.

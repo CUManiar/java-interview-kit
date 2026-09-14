@@ -3,61 +3,8 @@ import java.util.*;
 /* ==========================================================================
  * ALGOS: DYNAMIC PROGRAMMING
  * Run: java DynamicProgramming.java
- * ==========================================================================
- *
- * WHEN IS IT DP?
- * --------------
- *  1. OPTIMAL SUBSTRUCTURE  - the answer is built from answers to smaller
- *                             instances of the SAME problem
- *  2. OVERLAPPING SUBPROBLEMS - the same smaller instance is needed many times
- *  Signals in the prompt: "how many ways", "minimum/maximum cost", "longest",
- *  "can you reach/partition", "count the paths". Plus: brute force is exponential.
- *
- *  If subproblems DON'T overlap, it's divide-and-conquer (merge sort), not DP.
- *  If a greedy local choice is provably optimal, it's greedy, not DP.
- *
- * THE 5-STEP RECIPE — follow it every time, don't improvise
- * --------------------------------------------------------
- *  1. STATE      What uniquely identifies a subproblem? -> dp[i], dp[i][j], dp[i][cap]
- *  2. RECURRENCE How does a state combine smaller states?
- *  3. BASE CASE  The smallest states, filled in directly.
- *  4. ORDER      Which direction fills the table so dependencies are ready first?
- *  5. ANSWER     Which cell holds the final result? (not always the last one)
- *
- * TOP-DOWN vs BOTTOM-UP
- * ---------------------
- *   MEMOISATION (top-down): recursion + a cache.
- *     + mirrors the natural recursive definition, only computes reachable states
- *     - recursion depth (StackOverflow at ~10k frames), function-call overhead
- *   TABULATION (bottom-up): fill an array with loops.
- *     + no stack risk, easy to space-optimise down to O(1) rows
- *     - you must work out the fill order yourself
- *   Write the recursion first, add a cache, then convert to a table if needed.
- *
- * FIBONACCI — the whole idea in one picture
- * -----------------------------------------
- *   naive recursion, exponential:              memoised, linear:
- *              f(5)                              f(5)
- *            /      \                           /    \
- *         f(4)      f(3)                     f(4)   [f(3) CACHED]
- *        /   \      /   \                    /   \
- *     f(3)  f(2) f(2)  f(1)              f(3)  [f(2) CACHED]
- *     ...   ...  ...    (recomputed!)
- *
- * THE PATTERN CATALOGUE  (recognise the shape -> you already know the code)
- * ┌────────────────────────┬──────────────────────┬────────────────────────────┐
- * │ Pattern                │ State                │ Example                    │
- * ├────────────────────────┼──────────────────────┼────────────────────────────┤
- * │ Linear / 1D            │ dp[i]                │ climb stairs, house robber │
- * │ Grid / 2D paths        │ dp[r][c]             │ unique paths, min path sum │
- * │ Two sequences          │ dp[i][j]             │ LCS, edit distance         │
- * │ 0/1 Knapsack           │ dp[i][capacity]      │ subset sum, partition      │
- * │ Unbounded knapsack     │ dp[capacity]         │ coin change, rod cutting   │
- * │ Interval               │ dp[i][j] over ranges │ burst balloons, MCM        │
- * │ Subsequence (LIS)      │ dp[i] = best ending i│ LIS, russian dolls         │
- * │ State machine          │ dp[i][state]         │ stock with cooldown/fee    │
- * │ Digit / bitmask        │ dp[mask]             │ TSP, count subsets         │
- * └────────────────────────┴──────────────────────┴────────────────────────────┘
+ * See ./README.md for the mental model (when is it DP?), the 5-step recipe,
+ * top-down vs bottom-up tradeoffs, and the pattern catalogue — not repeated here.
  * ========================================================================== */
 public class DynamicProgramming {
 
@@ -212,7 +159,7 @@ public class DynamicProgramming {
         dp[0] = grid[0][0];
         for (int c = 1; c < n; c++) dp[c] = dp[c - 1] + grid[0][c];
         for (int r = 1; r < m; r++) {
-            dp[0] += grid[r][0];
+            dp[0] += grid[r][0];             // col 0 has only one path in: straight down, so accumulate
             for (int c = 1; c < n; c++)
                 dp[c] = Math.min(dp[c], dp[c - 1]) + grid[r][c];
         }
@@ -523,13 +470,5 @@ public class DynamicProgramming {
  *   LC 312  Burst Balloons                        hard   interval DP
  *   LC 329  Longest Increasing Path in a Matrix   hard   DFS + memo
  *
- * SELF-TEST QUESTIONS
- *   - Name the 5 steps of setting up a DP.
- *   - 0/1 knapsack iterates capacity downwards, unbounded upwards. WHY?
- *   - LC 518 vs LC 377: which loop is outer, and what does swapping them change?
- *   - Why must maxProduct track the minimum too?
- *   - LIS in O(n log n): what does tails[k] actually mean? Is tails the LIS?
- *   - When is memoisation better than tabulation, and vice versa?
- *   - Edit distance: name the three predecessor cells and their operations.
- *   - Why is expand-around-center preferred over the DP table for LC 5?
+ * Self-test questions + answers: see ./README.md
  * ========================================================================== */

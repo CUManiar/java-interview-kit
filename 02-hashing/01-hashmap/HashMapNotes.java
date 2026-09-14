@@ -3,51 +3,8 @@ import java.util.*;
 /* ==========================================================================
  * DS: HASH MAP / HASH TABLE / HASH SET
  * Run: java HashMapNotes.java
- * ==========================================================================
- *
- * MENTAL MODEL
- * ------------
- *      key ──> hashCode() ──> spread ──> & (cap-1) ──> bucket index
- *
- *   buckets (array of length 16, always a power of 2)
- *    0 -> null
- *    1 -> ["apple"=1] -> ["grape"=9]        <- COLLISION, resolved by chaining
- *    2 -> null
- *    3 -> ["mango"=5]
- *   ...
- *
- * WHY `& (cap - 1)` INSTEAD OF `% cap`
- *   If cap is a power of two, cap-1 is 000...111, so AND == modulo but ~5x faster.
- *   This is exactly why java.util.HashMap always rounds capacity up to a power of 2.
- *
- * WHY `h ^ (h >>> 16)` (the "spread" step)
- *   Masking with (cap-1) only keeps the LOW bits. If your hashCodes differ only
- *   in the HIGH bits, everything collides. XOR-ing the high 16 into the low 16
- *   mixes them in cheaply. This is the actual JDK implementation.
- *
- * COLLISION STRATEGIES
- * --------------------
- *   CHAINING         each bucket holds a linked list (or tree). What Java does.
- *   LINEAR PROBING   on collision, walk to the next free slot: i = (i+1) % cap.
- *                    Drawback: clustering; deletes need tombstones.
- *   DOUBLE HASHING   step size comes from a SECOND hash fn: i = (i + j*h2(k)) % cap.
- *                    Spreads better than linear probing.
- *   RESIZING         when size > cap * loadFactor (0.75), double cap and rehash all.
- *
- * JAVA 8+ TREEIFICATION
- *   A bucket chain of >= 8 nodes (and table >= 64) converts to a RED-BLACK TREE.
- *   Turns worst-case lookup from O(n) to O(log n). Untreeifies below 6.
- *   Say this in the interview. It's the #1 "do you actually know HashMap" question.
- *
- * COMPLEXITY
- *   get/put/remove: O(1) average, O(log n) worst (treeified), O(n) if hashCode is garbage
- *   space: O(n)
- *
- * THE equals/hashCode CONTRACT  — memorise verbatim
- *   1. a.equals(b)  =>  a.hashCode() == b.hashCode()          (MUST)
- *   2. a.hashCode() == b.hashCode()  does NOT imply equals    (collisions are legal)
- *   3. hashCode must be stable while the object is a key      (never key on a mutable field)
- *   Break #1 and your object vanishes from the map. Classic production bug.
+ * See ./README.md for the mental model, complexity, collision strategies,
+ * treeification, and the equals/hashCode contract — not repeated here.
  * ========================================================================== */
 public class HashMapNotes {
 
@@ -126,7 +83,11 @@ public class HashMapNotes {
 
         public int size() { return size; }
 
-        /* Double capacity and re-place every node. O(n), amortized away. */
+        /* Double capacity and re-place every node — every node's bucket index can
+         * change since indexFor masks with the new (larger) table.length. O(n),
+         * amortized away because it only fires once per doubling of size.
+         * (No treeification here — this from-scratch version stays O(n) worst case
+         * per bucket; see README for how java.util.HashMap avoids that.) */
         @SuppressWarnings("unchecked")
         private void resize() {
             Node<K, V>[] old = table;
@@ -169,60 +130,11 @@ public class HashMapNotes {
     record Cell(int row, int col) { }
 
     /* ======================================================================
-     * 3. JAVA API — THE IDIOMS YOU MUST HAVE IN MUSCLE MEMORY
-     * ======================================================================
-     *
-     *   Map<String,Integer> m = new HashMap<>();
-     *
-     *   m.put(k,v)                    returns previous value or null
-     *   m.putIfAbsent(k,v)            only writes if absent
-     *   m.get(k)                      null if missing
-     *   m.getOrDefault(k, 0)          <- USE THIS, kills null checks
-     *   m.containsKey(k) / containsValue(v)
-     *   m.remove(k) / m.remove(k,v)
-     *   m.keySet() / m.values() / m.entrySet()
-     *   m.forEach((k,v) -> ...)
-     *
-     *   ── COUNTING (memorise) ────────────────────────────────────────────
-     *     m.merge(k, 1, Integer::sum);                 // +1, creates if absent
-     *     m.put(k, m.getOrDefault(k,0) + 1);           // equivalent, more typing
-     *     m.compute(k, (key,v) -> v==null ? 1 : v+1);  // most general
-     *
-     *   ── GROUPING (memorise) ────────────────────────────────────────────
-     *     Map<String,List<String>> g = new HashMap<>();
-     *     g.computeIfAbsent(key, x -> new ArrayList<>()).add(val);
-     *
-     *   ── merge SEMANTICS ────────────────────────────────────────────────
-     *     merge(k, v, fn): absent -> put(k,v); present -> put(k, fn(old,v));
-     *                      if fn returns null -> the ENTRY IS REMOVED.
-     *
-     *   ── ITERATION + SAFE REMOVAL ───────────────────────────────────────
-     *     for (var e : m.entrySet()) { e.getKey(); e.getValue(); e.setValue(x); }
-     *     m.entrySet().removeIf(e -> e.getValue() == 0);   // safe
-     *     // removing inside a for-each -> ConcurrentModificationException
-     *
-     *   ── VARIANTS ───────────────────────────────────────────────────────
-     *   ┌──────────────────┬─────────────────┬──────────┬────────────────────────┐
-     *   │ Type             │ Order           │ Lookup   │ Use when               │
-     *   ├──────────────────┼─────────────────┼──────────┼────────────────────────┤
-     *   │ HashMap          │ none            │ O(1)     │ default                │
-     *   │ LinkedHashMap    │ insertion/access│ O(1)     │ LRU cache, stable order│
-     *   │ TreeMap          │ sorted by key   │ O(log n) │ range/floor/ceiling    │
-     *   │ EnumMap          │ enum ordinal    │ O(1)     │ enum keys, tiny+fast   │
-     *   │ ConcurrentHashMap│ none            │ O(1)     │ multi-threaded         │
-     *   │ Hashtable        │ none            │ O(1)     │ NEVER (legacy, sync'd) │
-     *   └──────────────────┴─────────────────┴──────────┴────────────────────────┘
-     *
-     *   TreeMap navigation (the reason it exists):
-     *     floorKey(k)   largest key <= k        ceilingKey(k)  smallest key >= k
-     *     lowerKey(k)   largest key <  k        higherKey(k)   smallest key >  k
-     *     firstKey() lastKey() headMap(k) tailMap(k) subMap(a,b) pollFirstEntry()
-     *
-     *   SETS: HashSet / LinkedHashSet / TreeSet — same story, no values.
-     *
-     *   PERF NOTE: for keys 'a'..'z' use `int[26]`, for ASCII use `int[128]`.
-     *   3-5x faster than HashMap and interviewers notice.
-     */
+     * 3. JAVA API IDIOMS — demonstrated live in main() below (merge counting,
+     * computeIfAbsent grouping, TreeMap navigation). Full syntax reference
+     * (containsValue, entrySet iteration, HashMap/TreeMap/EnumMap variants,
+     * removeIf-safe iteration) lives in ../../java-api-examples.md.
+     * ====================================================================== */
 
     /* ======================================================================
      * 4. PATTERN: TWO SUM  (LC 1) — value -> index, single pass
@@ -379,12 +291,5 @@ public class HashMapNotes {
  *   LC 146  LRU Cache                             med    LinkedHashMap or map+DLL
  *   LC 560  Subarray Sum Equals K                 med    prefix-sum -> count map
  *
- * SELF-TEST QUESTIONS
- *   - What breaks if you override equals but not hashCode?
- *   - Why must HashMap capacity be a power of two?
- *   - What does `h ^ (h >>> 16)` buy you?
- *   - At what chain length does Java treeify a bucket, and why?
- *   - Difference between HashMap, ConcurrentHashMap, and Hashtable?
- *   - Why is `containsKey` not the same as `get(k) != null`?
- *   - Explain merge() vs compute() vs computeIfAbsent().
+ * Self-test questions + answers: see ./README.md
  * ========================================================================== */
